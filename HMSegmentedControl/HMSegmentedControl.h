@@ -17,6 +17,7 @@ typedef enum {
     HMSegmentedControlSelectionStyleTextWidthStripe, // Indicator width will only be as big as the text width
     HMSegmentedControlSelectionStyleFullWidthStripe, // Indicator width will fill the whole segment
     HMSegmentedControlSelectionStyleBox, // A rectangle that covers the whole segment
+    HMSegmentedControlSelectionStyleRoundedBox,
     HMSegmentedControlSelectionStyleArrow // An arrow in the middle of the segment pointing up or down depending on `HMSegmentedControlSelectionIndicatorLocation`
 } HMSegmentedControlSelectionStyle;
 
@@ -36,7 +37,8 @@ typedef NS_OPTIONS(NSInteger, HMSegmentedControlBorderType) {
     HMSegmentedControlBorderTypeTop = (1 << 0),
     HMSegmentedControlBorderTypeLeft = (1 << 1),
     HMSegmentedControlBorderTypeBottom = (1 << 2),
-    HMSegmentedControlBorderTypeRight = (1 << 3)
+    HMSegmentedControlBorderTypeRight = (1 << 3),
+		HMSegmentedControlBorderTypeRound = (1 << 4),
 };
 
 enum {

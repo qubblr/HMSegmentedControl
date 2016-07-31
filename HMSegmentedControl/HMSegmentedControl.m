@@ -17,6 +17,7 @@
 
 @property (nonatomic, strong) CALayer *selectionIndicatorStripLayer;
 @property (nonatomic, strong) CALayer *selectionIndicatorBoxLayer;
+@property (nonatomic, strong) CALayer *selectionIndicatorRoundedBoxLayer;
 @property (nonatomic, strong) CALayer *selectionIndicatorArrowLayer;
 @property (nonatomic, readwrite) CGFloat segmentWidth;
 @property (nonatomic, readwrite) NSArray *segmentWidthsArray;
@@ -154,6 +155,9 @@
     
     self.selectionIndicatorArrowLayer = [CALayer layer];
     self.selectionIndicatorStripLayer = [CALayer layer];
+    self.selectionIndicatorRoundedBoxLayer = [CALayer layer];
+    self.selectionIndicatorRoundedBoxLayer.borderWidth = 1.5f;
+  
     self.selectionIndicatorBoxLayer = [CALayer layer];
     self.selectionIndicatorBoxLayer.opacity = self.selectionIndicatorBoxOpacity;
     self.selectionIndicatorBoxLayer.borderWidth = 1.0f;
@@ -235,12 +239,10 @@
 }
 
 - (NSAttributedString *)attributedTitleAtIndex:(NSUInteger)index {
-    id title = self.sectionTitles[index];
+    NSString *title = self.sectionTitles[index];
     BOOL selected = (index == self.selectedSegmentIndex) ? YES : NO;
     
-    if ([title isKindOfClass:[NSAttributedString class]]) {
-        return (NSAttributedString *)title;
-    } else if (!self.titleFormatter) {
+    if (!self.titleFormatter) {
         NSDictionary *titleAttrs = selected ? [self resultingSelectedTitleTextAttributes] : [self resultingTitleTextAttributes];
         
         // the color should be cast to CGColor in order to avoid invalid context on iOS7
@@ -267,7 +269,8 @@
     self.selectionIndicatorArrowLayer.backgroundColor = self.selectionIndicatorColor.CGColor;
     
     self.selectionIndicatorStripLayer.backgroundColor = self.selectionIndicatorColor.CGColor;
-    
+  
+    self.selectionIndicatorRoundedBoxLayer.borderColor = self.selectionIndicatorColor.CGColor;
     self.selectionIndicatorBoxLayer.backgroundColor = self.selectionIndicatorColor.CGColor;
     self.selectionIndicatorBoxLayer.borderColor = self.selectionIndicatorColor.CGColor;
     
@@ -453,7 +456,12 @@
             if (!self.selectionIndicatorStripLayer.superlayer) {
                 self.selectionIndicatorStripLayer.frame = [self frameForSelectionIndicator];
                 [self.scrollView.layer addSublayer:self.selectionIndicatorStripLayer];
-                
+              
+                if (self.selectionStyle == HMSegmentedControlSelectionStyleRoundedBox && !self.selectionIndicatorRoundedBoxLayer.superlayer) {
+                  self.selectionIndicatorRoundedBoxLayer.frame = [self frameForFillerSelectionIndicator];
+                  self.selectionIndicatorRoundedBoxLayer.cornerRadius = [self roundedBoxCornerRadius];
+                  [self.scrollView.layer insertSublayer:self.selectionIndicatorRoundedBoxLayer atIndex:0];
+                }
                 if (self.selectionStyle == HMSegmentedControlSelectionStyleBox && !self.selectionIndicatorBoxLayer.superlayer) {
                     self.selectionIndicatorBoxLayer.frame = [self frameForFillerSelectionIndicator];
                     [self.scrollView.layer insertSublayer:self.selectionIndicatorBoxLayer atIndex:0];
@@ -468,6 +476,16 @@
     CALayer *backgroundLayer = [CALayer layer];
     backgroundLayer.frame = fullRect;
     [self.scrollView.layer insertSublayer:backgroundLayer atIndex:0];
+
+    if (self.borderType & HMSegmentedControlBorderTypeRound) {
+        CALayer *borderLayer = [CALayer layer];
+        borderLayer.frame = CGRectMake(0, 0, fullRect.size.width, fullRect.size.height);
+        borderLayer.cornerRadius = MIN(fullRect.size.width, fullRect.size.height) * 0.5f;
+        borderLayer.borderColor = self.borderColor.CGColor;
+        borderLayer.borderWidth = self.borderWidth;
+        [backgroundLayer addSublayer: borderLayer];
+        return;
+    }
     
     // Border layer
     if (self.borderType & HMSegmentedControlBorderTypeTop) {
@@ -589,6 +607,11 @@
             return CGRectMake((self.segmentWidth + self.selectionIndicatorEdgeInsets.left) * self.selectedSegmentIndex, indicatorYOffset, self.segmentWidth - self.selectionIndicatorEdgeInsets.right, self.selectionIndicatorHeight);
         }
     }
+}
+
+- (CGFloat)roundedBoxCornerRadius {
+  CGSize size = self.selectionIndicatorRoundedBoxLayer.frame.size;
+  return MIN(size.width, size.height) * 0.5f;
 }
 
 - (CGRect)frameForFillerSelectionIndicator {
@@ -788,6 +811,7 @@
         [self.selectionIndicatorArrowLayer removeFromSuperlayer];
         [self.selectionIndicatorStripLayer removeFromSuperlayer];
         [self.selectionIndicatorBoxLayer removeFromSuperlayer];
+        [self.selectionIndicatorRoundedBoxLayer removeFromSuperlayer];
     } else {
         [self scrollToSelectedSegmentIndex:animated];
         
@@ -806,9 +830,13 @@
                 if ([self.selectionIndicatorStripLayer superlayer] == nil) {
                     [self.scrollView.layer addSublayer:self.selectionIndicatorStripLayer];
                     
-                    if (self.selectionStyle == HMSegmentedControlSelectionStyleBox && [self.selectionIndicatorBoxLayer superlayer] == nil)
+                    if (self.selectionStyle == HMSegmentedControlSelectionStyleBox && [self.selectionIndicatorBoxLayer superlayer] == nil) {
                         [self.scrollView.layer insertSublayer:self.selectionIndicatorBoxLayer atIndex:0];
-                    
+                    }
+                    if (self.selectionStyle == HMSegmentedControlSelectionStyleRoundedBox && [self.selectionIndicatorRoundedBoxLayer superlayer] == nil) {
+                        [self.scrollView.layer insertSublayer:self.selectionIndicatorRoundedBoxLayer atIndex:0];
+                    }
+              
                     [self setSelectedSegmentIndex:index animated:NO notify:YES];
                     return;
                 }
@@ -821,14 +849,18 @@
             self.selectionIndicatorArrowLayer.actions = nil;
             self.selectionIndicatorStripLayer.actions = nil;
             self.selectionIndicatorBoxLayer.actions = nil;
-            
+            self.selectionIndicatorRoundedBoxLayer.actions = nil;
+          
             // Animate to new position
             [CATransaction begin];
             [CATransaction setAnimationDuration:0.15f];
             [CATransaction setAnimationTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear]];
             [self setArrowFrame];
+            self.selectionIndicatorRoundedBoxLayer.frame = [self frameForSelectionIndicator];
             self.selectionIndicatorBoxLayer.frame = [self frameForSelectionIndicator];
             self.selectionIndicatorStripLayer.frame = [self frameForSelectionIndicator];
+            self.selectionIndicatorRoundedBoxLayer.frame = [self frameForFillerSelectionIndicator];
+            self.selectionIndicatorRoundedBoxLayer.cornerRadius = [self roundedBoxCornerRadius];
             self.selectionIndicatorBoxLayer.frame = [self frameForFillerSelectionIndicator];
             [CATransaction commit];
         } else {
@@ -842,7 +874,11 @@
             
             self.selectionIndicatorBoxLayer.actions = newActions;
             self.selectionIndicatorBoxLayer.frame = [self frameForFillerSelectionIndicator];
-            
+          
+            self.selectionIndicatorRoundedBoxLayer.actions = newActions;
+            self.selectionIndicatorRoundedBoxLayer.frame = [self frameForFillerSelectionIndicator];
+            self.selectionIndicatorRoundedBoxLayer.cornerRadius = [self roundedBoxCornerRadius];
+          
             if (notify)
                 [self notifyForSegmentChangeToIndex:index];
         }
