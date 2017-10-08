@@ -7,6 +7,7 @@
 //
 
 #import "ViewController.h"
+@import HMSegmentedControl;
 
 @interface ViewController ()
 
@@ -53,12 +54,25 @@
     
     
     // Segmented control with images
-    HMSegmentedControl *segmentedControl2 = [[HMSegmentedControl alloc] initWithSectionImages:@[[UIImage imageNamed:@"1"], [UIImage imageNamed:@"2"], [UIImage imageNamed:@"3"], [UIImage imageNamed:@"4"]] sectionSelectedImages:@[[UIImage imageNamed:@"1-selected"], [UIImage imageNamed:@"2-selected"], [UIImage imageNamed:@"3-selected"], [UIImage imageNamed:@"4-selected"]]];
+    NSArray<UIImage *> *images = @[[UIImage imageNamed:@"1"],
+                        [UIImage imageNamed:@"2"],
+                        [UIImage imageNamed:@"3"],
+                        [UIImage imageNamed:@"4"]];
+    
+    NSArray<UIImage *> *selectedImages = @[[UIImage imageNamed:@"1-selected"],
+                                [UIImage imageNamed:@"2-selected"],
+                                [UIImage imageNamed:@"3-selected"],
+                                [UIImage imageNamed:@"4-selected"]];
+    NSArray<NSString *> *titles = @[@"1", @"2", @"3", @"4"];
+
+    HMSegmentedControl *segmentedControl2 = [[HMSegmentedControl alloc] initWithSectionImages:images sectionSelectedImages:selectedImages titlesForSections:titles];
+    segmentedControl2.imagePosition = HMSegmentedControlImagePositionLeftOfText;
     segmentedControl2.frame = CGRectMake(0, 120, viewWidth, 50);
     segmentedControl2.selectionIndicatorHeight = 4.0f;
     segmentedControl2.backgroundColor = [UIColor clearColor];
     segmentedControl2.selectionIndicatorLocation = HMSegmentedControlSelectionIndicatorLocationDown;
     segmentedControl2.selectionStyle = HMSegmentedControlSelectionStyleTextWidthStripe;
+    segmentedControl2.segmentWidthStyle = HMSegmentedControlSegmentWidthStyleDynamic;
     [segmentedControl2 addTarget:self action:@selector(segmentedControlChangedValue:) forControlEvents:UIControlEventValueChanged];
     [self.view addSubview:segmentedControl2];
 
@@ -73,6 +87,8 @@
     segmentedControl3.backgroundColor = [UIColor colorWithRed:0.1 green:0.4 blue:0.8 alpha:1];
     segmentedControl3.titleTextAttributes = @{NSForegroundColorAttributeName : [UIColor whiteColor]};
     segmentedControl3.selectionIndicatorColor = [UIColor colorWithRed:0.5 green:0.8 blue:1 alpha:1];
+    segmentedControl3.selectionIndicatorBoxColor = [UIColor blackColor];
+    segmentedControl3.selectionIndicatorBoxOpacity = 1.0;
     segmentedControl3.selectionStyle = HMSegmentedControlSelectionStyleBox;
     segmentedControl3.selectedSegmentIndex = HMSegmentedControlNoSegment;
     segmentedControl3.selectionIndicatorLocation = HMSegmentedControlSelectionIndicatorLocationDown;
