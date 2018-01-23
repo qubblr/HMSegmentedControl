@@ -220,6 +220,10 @@
     [self setNeedsDisplay];
 }
 
+- (BOOL)hasZeroSegments {
+    return self.segmentWidthsArray.count == 0;
+}
+
 #pragma mark - Drawing
 
 - (CGSize)measureTitleAtIndex:(NSUInteger)index {
@@ -599,7 +603,11 @@
 
 - (CGRect)frameForSelectionIndicator {
     CGFloat indicatorYOffset = 0.0f;
-    
+  
+    if (self.hasZeroSegments) {
+      return CGRectZero;
+    }
+
     if (self.selectionIndicatorLocation == HMSegmentedControlSelectionIndicatorLocationDown) {
         indicatorYOffset = self.bounds.size.height - self.selectionIndicatorHeight + self.selectionIndicatorEdgeInsets.bottom;
     }
@@ -666,6 +674,11 @@
 }
 
 - (CGRect)frameForFillerSelectionIndicator {
+    
+    if (self.hasZeroSegments) {
+        return CGRectZero;
+    }
+    
     if (self.segmentWidthStyle == HMSegmentedControlSegmentWidthStyleDynamic) {
         CGFloat selectedSegmentOffset = 0.0f;
         
@@ -833,6 +846,10 @@
 }
 
 - (void)scrollToSelectedSegmentIndex:(BOOL)animated {
+    if (self.hasZeroSegments) {
+        return;
+    }
+
     CGRect rectForSelectedIndex = CGRectZero;
     CGFloat selectedSegmentOffset = 0;
     if (self.segmentWidthStyle == HMSegmentedControlSegmentWidthStyleFixed) {
