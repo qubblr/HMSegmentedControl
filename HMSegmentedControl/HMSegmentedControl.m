@@ -138,6 +138,7 @@
     self.selectedSegmentIndex = 0;
     self.segmentEdgeInset = UIEdgeInsetsMake(0, 5, 0, 5);
     self.selectionIndicatorHeight = 5.0f;
+    self.selectionIndicatorCornerRadius = 0.0f;
     self.selectionIndicatorEdgeInsets = UIEdgeInsetsMake(0.0f, 0.0f, 0.0f, 0.0f);
     self.selectionStyle = HMSegmentedControlSelectionStyleTextWidthStripe;
     self.selectionIndicatorLocation = HMSegmentedControlSelectionIndicatorLocationUp;
@@ -507,6 +508,10 @@
         } else {
             if (!self.selectionIndicatorStripLayer.superlayer) {
                 self.selectionIndicatorStripLayer.frame = [self frameForSelectionIndicator];
+              
+                self.selectionIndicatorStripLayer.cornerRadius = self.selectionIndicatorCornerRadius;
+                self.selectionIndicatorStripLayer.masksToBounds = YES;
+
                 [self.scrollView.layer addSublayer:self.selectionIndicatorStripLayer];
               
                 if (self.selectionStyle == HMSegmentedControlSelectionStyleRoundedBox && !self.selectionIndicatorRoundedBoxLayer.superlayer) {
